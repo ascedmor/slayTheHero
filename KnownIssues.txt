@@ -1,0 +1,38 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Issue Name
+	1: Issue Description - A short description of the issue
+	
+	2: Suspected Cause - Where you suspect the issue is stemming from
+	
+	3: Actions taken - A record of actions taken and their result
+	
+	4: Summary - A less detailed record of actions taken, for use when multiple fix's have been attempted and no solution found
+	
+	5: Misc Notes - Any thoughts or observations that are relevant but dont fit into prior categories
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+NPC Stopping Bug	
+	1.Slower NPC's will, when above or left of the given location, fail to stop accurately at the given location relative to their speed (the lower their speed the further away they stop)
+	
+	2.An incorrect offset, or a maths error somewhere in the goto_location npc class function
+	
+	3.No actions taken
+	
+	4.
+	
+	5.
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Slow Pause	
+	1.Entities will continue to deccelerate during pause rather than completely stopping and retaining speed on unpause
+	
+	2.Decellerate function taking place outside of main "If not paused" block
+	
+	3.No actions taken
+		
+	4.
+	
+	5.If the NPC is below or left of the player, they will deccelerate to a speed of 1, which they will maintain for a seemingly arbitraty amount of time
+	
+		Potentially cascading from the NPC Stopping bug
