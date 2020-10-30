@@ -72,12 +72,12 @@ class controller:
                                         if button.text == 'Resume':
                                             self.paused = False
                                         if button.text == 'Options':
-                                            self.window.menu = menus.menuList["options"]
+                                            self.window.menu = menuList["options"]
                                             print( 'No options menu implemented')
                                         if button.text == 'Quit':
                                             self.running = False
                                     elif menu == "Options":
                                         if button.text == "Back":
-                                            self.window.menu = menus.menuList["pause"]
+                                            self.window.menu = menuList["pause"]
             self.model.update(self.paused)
         self.window.on_quit()
