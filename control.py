@@ -13,7 +13,7 @@ class controller:
         self.clock = pygame.time.Clock()
         self.paused = True
         self.main_loop()
-        
+
     def main_loop(self):
         moveUp = False
         moveDown = False
@@ -75,7 +75,7 @@ class controller:
                             if button.rect.collidepoint(mouseScreenLocation):
                                 if leftButton:
                                     menu = self.window.menu.name
-                                    print menu
+                                    print(menu)
                                     if menu == "Pause":
                                         if button.text == 'Resume':
                                             self.paused = False
@@ -89,6 +89,6 @@ class controller:
                                             self.window.menu = menus.menuList["pause"]
             self.model.update(self.paused)
         self.window.on_quit()
-                
+
 if __name__ == '__main__':
     c = controller()
