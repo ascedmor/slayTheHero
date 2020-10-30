@@ -15,10 +15,8 @@ class controller:
         self.main_loop()
 
     def main_loop(self):
-        moveUp = False
-        moveDown = False
-        moveLeft = False
-        moveRight = False
+        moveDown = 0.0
+        moveRight = 0.0
         while self.running != False:
             self.clock.tick(60)
             self.window.fps = self.clock.get_fps()
@@ -32,35 +30,28 @@ class controller:
                 elif event.key == pygame.K_ESCAPE:
                     self.paused = not self.paused
                 if event.key == pygame.K_w:
-                    moveUp = True
+                    moveDown -= 1.0
+                elif event.key == pygame.K_s:
+                    moveDown += 1.0
                 if event.key == pygame.K_a:
-                    moveLeft = True
-                if event.key == pygame.K_s:
-                    moveDown = True
-                if event.key == pygame.K_d:
-                    moveRight = True
+                    moveRight -= 1.0
+                elif event.key == pygame.K_d:
+                    moveRight += 1.0
                 if event.key == pygame.K_RETURN:
                     select = True
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_w:
-                    moveUp = False
+                    moveDown += 1.0
+                elif event.key == pygame.K_s:
+                    moveDown -= 1.0
                 if event.key == pygame.K_a:
-                    moveLeft = False
-                if event.key == pygame.K_s:
-                    moveDown = False
-                if event.key == pygame.K_d:
-                    moveRight = False
+                    moveRight += 1.0
+                elif event.key == pygame.K_d:
+                    moveRight -= 1.0
                 if event.key == pygame.K_RETURN:
                     select = False
             if not self.paused:
-                if moveUp == True:
-                    self.model.player.add_speed([0,-1])
-                if moveDown == True:
-                    self.model.player.add_speed([0,1])
-                if moveRight == True:
-                    self.model.player.add_speed([1,0])
-                if moveLeft == True:
-                    self.model.player.add_speed([-1,0])
+                self.model.player.add_speed([moveRight,moveDown])
                 for this in self.model.rooms[self.model.activeRoom].npcs:
                     this.goto_location(self.model.player.playerLocation)
             else:
