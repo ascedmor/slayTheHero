@@ -1,4 +1,4 @@
 from .menus import *
 from .window import *
 
-__all__ = ['window', 'menu', 'title', 'button', 'menuList', 'menuFont']
+__all__ = ['Window', 'Menu', 'Title', 'Button', 'menuList', 'menuFont']

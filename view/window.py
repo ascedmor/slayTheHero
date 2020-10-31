@@ -4,8 +4,8 @@ from controller import *
 import pygame
 from .menus import *
 
-class window:
-    event_system = controller.event_system
+class Window:
+    event_system = Controller.event_system
     def __init__(self,width,height):
         self.running = True
         self.fullscreen = False

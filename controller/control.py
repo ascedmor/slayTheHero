@@ -2,8 +2,9 @@ import os, sys
 sys.path.append(os.path.abspath('../'))
 import pygame
 from .EventSystem import *
+from Common import *
 
-class controller:
+class Controller(EventObject):
     event_system = EventSystem()
     event_system.add_event_type(QUIT_EVENT)
     event_system.add_event_type(KEYDOWN_EVENT)
@@ -17,6 +18,7 @@ class controller:
     event_system.add_event_type(LOAD_ROOM_EVENT)
     event_system.add_event_type(MAIN_LOOP_EVENT)
     def __init__(self):
+        EventObject.__init__(self)
         self.running = True
         self.clock = pygame.time.Clock()
         self.paused = True

@@ -6,14 +6,17 @@ import random
 import numpy
 import math
 from PIL import Image as image
-class model():
-    event_system = controller.event_system
+from Common import *
+
+class Model(EventObject):
+    event_system = Controller.event_system
     def __init__(self,window):
+        EventObject.__init__(self)
         self.window = window
-        self.player = player([500,500],self.window.width,self.window.height)
+        self.player = Player([500,500],self.window.width,self.window.height)
         ##create test room and set it as the active room
         self.rooms = {
-            "Test": room(name="Test")
+            "Test": Room(name="Test")
             }
         self.activeRoom = "Test"
         self.event_system.add_event_handler(UPDATE_EVENT, 0, self.update)
@@ -21,7 +24,7 @@ class model():
         ###Add 10 random npcs to the test map
         print('adding random npcs')
         while count < 10:
-            self.rooms["Test"].add_npc(npc((random.randint(0,self.rooms[self.activeRoom].size[0]),random.randint(0,self.rooms[self.activeRoom].size[1])),random.randint(1,8)))
+            self.rooms["Test"].add_npc(Npc((random.randint(0,self.rooms[self.activeRoom].size[0]),random.randint(0,self.rooms[self.activeRoom].size[1])),random.randint(1,8)))
             count +=1
         print('finished adding npcs')
         self.event_system.FireEvent(self.get_room(), LOAD_ROOM_EVENT, 0)
@@ -46,9 +49,10 @@ class model():
     def on_close(self, event):
         self.window.on_close(event)
 
-class room():
-    event_system = controller.event_system
+class Room(EventObject):
+    event_system = Controller.event_system
     def __init__(self, name, background=pygame.image.load('villageMap.bmp'), collision=pygame.image.load('testCollision.bmp')):
+        EventObject.__init__(self)
         self.background = pygame.transform.scale(background,(12000,12000))
         collision = pygame.transform.scale(collision,(12000,12000))
         self.size = self.background.get_rect().size
@@ -64,9 +68,10 @@ class room():
         ###This function will be used to save the room state when the player exits the room
 
 
-class player():
-    event_system = controller.event_system
+class Player(EventObject):
+    event_system = Controller.event_system
     def __init__(self, location,windowWidth,windowHeight):
+        EventObject.__init__(self)
         ###do player stuff here
         self.playerLocation = location
         self.screenLocation = [windowWidth/2,windowHeight/2]
@@ -154,9 +159,10 @@ class player():
 
 
 
-class npc():
-    event_system = controller.event_system
+class Npc(EventObject):
+    event_system = Controller.event_system
     def __init__(self, location,level):
+        EventObject.__init__(self)
         ###do entity init stuff here
         self.roomLocation = location
         ###type will hold a numerical value that indicates the type of npc (0=villager,1=monster tier 1,2=monster tier 2,3=monster tier 3,4=monster tier 4,5=monster tier 5,6=monster tier 6,7=world boss)
@@ -203,8 +209,9 @@ class npc():
 
 
 
-        class ability():
+        class Ability(EventObject):
             def __init__(self,name=None):
+                EventObject.__init__(self)
                 ###ability sub class
                 self.name = name
 

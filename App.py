@@ -1,17 +1,19 @@
 import os, sys
+from Common import *
 from controller import *
 from view import *
 from model import *
 
-class App:
-    event_system = controller.event_system
+class App(EventObject):
+    event_system = Controller.event_system
     def __init__(self):
+        EventObject.__init__(self)
         self.event_system.add_event_handler(QUIT_EVENT, 0, self.on_close)
-        self.controller = controller()
+        self.controller = Controller()
         width = 1440
         height = 960
-        self.window = window(width,height)
-        self.model = model(self.window)
+        self.window = Window(width,height)
+        self.model = Model(self.window)
         self.main_loop()
 
     def on_close(self, event):
