@@ -1,83 +1,64 @@
 import os, sys
 sys.path.append(os.path.abspath('../'))
-from view import *
-from model import *
 import pygame
+from .EventSystem import *
 
 class controller:
+    event_system = EventSystem()
+    event_system.add_event_type(QUIT_EVENT)
+    event_system.add_event_type(KEYDOWN_EVENT)
+    event_system.add_event_type(KEYUP_EVENT)
+    event_system.add_event_type(BUTTON_CLICKED_EVENT)
+    event_system.add_event_type(UPDATE_EVENT)
+    event_system.add_event_type(UPDATE_FPS_EVENT)
+    event_system.add_event_type(TOGGLE_FULLSCREEN_EVENT)
+    event_system.add_event_type(UPDATE_MOUSE_EVENT)
+    event_system.add_event_type(PAUSE_GAME_EVENT)
+    event_system.add_event_type(LOAD_ROOM_EVENT)
+    event_system.add_event_type(MAIN_LOOP_EVENT)
     def __init__(self):
-        width = 1440
-        height = 960
-        self.window = window(width,height)
-        self.model = model(self.window)
         self.running = True
         self.clock = pygame.time.Clock()
         self.paused = True
-        self.main_loop()
+        self.event_system.add_event_handler(PAUSE_GAME_EVENT, 0, self.pause)
+        self.event_system.add_event_handler(MAIN_LOOP_EVENT, 0, self.main_loop)
 
-    def main_loop(self):
-        moveDown = 0.0
-        moveRight = 0.0
-        while self.running != False:
+    def on_close(self, event):
+        self.running = False
+
+    def pause(self, event):
+        if event.event_object:
+            self.paused = True
+        else:
+            self.paused = False
+
+    def main_loop(self, event):
+        if self.running:
             self.clock.tick(60)
-            self.window.fps = self.clock.get_fps()
+            # Fire the 0th UPDATE_FPS_EVENT handler and pass in self.clock, this event should update the fps in the window
+            self.event_system.FireEvent(self.clock, UPDATE_FPS_EVENT, 0)
             event = pygame.event.poll()
             if event.type == pygame.QUIT:
-                self.running = False
+                self.event_system.FireEvent(None, QUIT_EVENT, 0)
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                        self.window.toggle_fullscreen()
+                        self.event_system.FireEvent(None, TOGGLE_FULLSCREEN_EVENT, 0)
+                    else:
+                        select = True
                 elif event.key == pygame.K_ESCAPE:
-                    self.paused = not self.paused
-                if event.key == pygame.K_w:
-                    moveDown -= 1.0
-                elif event.key == pygame.K_s:
-                    moveDown += 1.0
-                if event.key == pygame.K_a:
-                    moveRight -= 1.0
-                elif event.key == pygame.K_d:
-                    moveRight += 1.0
-                if event.key == pygame.K_RETURN:
-                    select = True
+                    self.event_system.FireEvent(True, PAUSE_GAME_EVENT, 0)
+                else:
+                    if event.key == pygame.K_s or event.key == pygame.K_w:
+                        self.event_system.FireEvent(event.key, KEYDOWN_EVENT, 1) #player move down
+                    if event.key == pygame.K_d or event.key == pygame.K_a:
+                        self.event_system.FireEvent(event.key, KEYDOWN_EVENT, 2) #player move right
             elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_w:
-                    moveDown += 1.0
-                elif event.key == pygame.K_s:
-                    moveDown -= 1.0
-                if event.key == pygame.K_a:
-                    moveRight += 1.0
-                elif event.key == pygame.K_d:
-                    moveRight -= 1.0
+                if event.key == pygame.K_s or event.key == pygame.K_w:
+                    self.event_system.FireEvent(event.key, KEYUP_EVENT, 1) #player move down
+                if event.key == pygame.K_d or event.key == pygame.K_a:
+                    self.event_system.FireEvent(event.key, KEYUP_EVENT, 2) #player move right
                 if event.key == pygame.K_RETURN:
                     select = False
-            if not self.paused:
-                self.model.player.add_speed([moveRight,moveDown])
-                for this in self.model.rooms[self.model.activeRoom].npcs:
-                    this.goto_location(self.model.player.playerLocation)
-            else:
-                mouseScreenLocation = pygame.mouse.get_pos()
-                leftButton,rightButton,middleButton = pygame.mouse.get_pressed()
-###If there is an active menu, check if a button is being clicked
-##I wonder if there is a better way; something that lets you hold the button code in the button class
-###Perhaps a button.click function that holds a reference to the menu that it should open?
-                if self.window.menu != None:
-                    for button in self.window.menu.buttons:
-                        if button.rect != None:
-                            if button.rect.collidepoint(mouseScreenLocation):
-                                if leftButton:
-                                    menu = self.window.menu.name
-                                    print(menu)
-                                    if menu == "Pause":
-                                        if button.text == 'Resume':
-                                            self.paused = False
-                                        if button.text == 'Options':
-                                            self.window.menu = menuList["options"]
-                                            print( 'No options menu implemented')
-                                        if button.text == 'Quit':
-                                            self.running = False
-                                    elif menu == "Options":
-                                        if button.text == "Back":
-                                            self.window.menu = menuList["pause"]
-            self.model.update(self.paused)
-        self.window.on_quit()
+        self.event_system.FireEvent(None, UPDATE_MOUSE_EVENT, 0)
+        self.event_system.FireEvent(self.paused, UPDATE_EVENT, 0) # Update model
