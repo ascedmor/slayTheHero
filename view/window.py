@@ -1,7 +1,11 @@
+import os, sys
+sys.path.append(os.path.abspath('../'))
+from controller import *
 import pygame
 from .menus import *
 
-class window:
+class Window:
+    event_system = Controller.event_system
     def __init__(self,width,height):
         self.running = True
         self.fullscreen = False
@@ -11,7 +15,16 @@ class window:
         pygame.init()
         self.screen=pygame.display.set_mode([self.width,self.height])
         self.menu = None
-        self.fps = 0
+        self.fps = 0.0
+        self.mouse_screen_location = pygame.mouse.get_pos()
+        self.mouse_left_button, self.mouse_right_button, self.mouse_middle_bbutton = pygame.mouse.get_pressed()
+        self.event_system.add_event_handler(UPDATE_FPS_EVENT, 0, self.update_fps)
+        self.event_system.add_event_handler(TOGGLE_FULLSCREEN_EVENT, 0, self.toggle_fullscreen)
+        self.event_system.add_event_handler(UPDATE_MOUSE_EVENT, 0, self.update_mouse)
+        self.event_system.add_event_handler(LOAD_ROOM_EVENT, 0, self.load_room)
+
+    def update_fps(self, event):
+        self.fps = event.event_object.get_fps()
 
     def update(self,player,npcList,paused):
         if self.room != None:
@@ -36,7 +49,31 @@ class window:
         self.txt_at_location(self.fps,(50,50),menuFont)
         pygame.display.flip()
 
-    def on_quit(self):
+    def update_mouse(self, event):
+        self.mouse_screen_location = pygame.mouse.get_pos()
+        self.mouse_left_button, self.mouse_right_button, self.mouse_middle_bbutton = pygame.mouse.get_pressed()
+###If there is an active menu, check if a button is being clicked
+##I wonder if there is a better way; something that lets you hold the button code in the button class
+###Perhaps a button.click function that holds a reference to the menu that it should open?
+        if self.menu != None:
+            for button in self.menu.buttons:
+                if button.rect != None:
+                    if button.rect.collidepoint(self.mouse_screen_location):
+                        if self.mouse_left_button:
+                            menu = self.menu.name
+                            if menu == "Pause":
+                                if button.text == 'Resume':
+                                    self.event_system.FireEvent(False, PAUSE_GAME_EVENT, 0)
+                                if button.text == 'Options':
+                                    self.menu = menuList["options"]
+                                    print( 'No options menu implemented')
+                                if button.text == 'Quit':
+                                    self.event_system.FireEvent(None, QUIT_EVENT, 0)
+                                elif menu == "Options":
+                                    if button.text == "Back":
+                                        self.menu = menuList["pause"]
+
+    def on_close(self, event):
         self.running = False
         pygame.display.quit()
 
@@ -45,7 +82,7 @@ class window:
         surface = font.render(text, 1, colour,(200,200,200))
         self.screen.blit(surface,screenLocation)
 
-    def toggle_fullscreen(self):
+    def toggle_fullscreen(self, event):
         pygame.display.quit()
         if self.fullscreen == False:
             self.fullscreen = True
@@ -54,5 +91,5 @@ class window:
             self.fullscreen = False
             self.screen = pygame.display.set_mode([self.width,self.height])
 
-    def load_room(self,room):
-        self.room = room
+    def load_room(self,event):
+        self.room = event.event_object

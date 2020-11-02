@@ -1,46 +1,58 @@
+import os, sys
+sys.path.append(os.path.abspath('../'))
+from controller import *
 import pygame
 import random
 import numpy
 import math
 from PIL import Image as image
-class model():
+from Common import *
+
+class Model(EventObject):
+    event_system = Controller.event_system
     def __init__(self,window):
+        EventObject.__init__(self)
         self.window = window
-        self.player = player([500,500],self.window.width,self.window.height)
+        self.player = Player([500,500],self.window.width,self.window.height)
         ##create test room and set it as the active room
         self.rooms = {
-            "Test": room(name="Test")
+            "Test": Room(name="Test")
             }
         self.activeRoom = "Test"
-
+        self.event_system.add_event_handler(UPDATE_EVENT, 0, self.update)
         count = 0
         ###Add 10 random npcs to the test map
         print('adding random npcs')
         while count < 10:
-            self.rooms["Test"].add_npc(npc((random.randint(0,self.rooms[self.activeRoom].size[0]),random.randint(0,self.rooms[self.activeRoom].size[1])),random.randint(1,8)))
+            self.rooms["Test"].add_npc(Npc((random.randint(0,self.rooms[self.activeRoom].size[0]),random.randint(0,self.rooms[self.activeRoom].size[1])),random.randint(1,8)))
             count +=1
         print('finished adding npcs')
-        self.load_room()
+        self.event_system.FireEvent(self.get_room(), LOAD_ROOM_EVENT, 0)
 
     def add_room(self,room):
         self.rooms[room.name] = room
 
-    def load_room(self):
-        self.window.load_room(self.rooms[self.activeRoom])
-
     def get_room(self):
         return self.rooms[self.activeRoom]
 
-    def update(self,paused=False):
-
-        self.player.update_location(self.window,self.rooms[self.activeRoom])
-        for this in self.rooms[self.activeRoom].npcs:
-            this.update_location(self.rooms[self.activeRoom])
+    def update(self, event):
+        if not event.event_object:
+            self.player.update_speed()
+            for this in self.rooms[self.activeRoom].npcs:
+                this.goto_location(self.player.playerLocation)
+            self.player.update_location(self.window,self.rooms[self.activeRoom])
+            for this in self.rooms[self.activeRoom].npcs:
+                this.update_location(self.rooms[self.activeRoom])
         self.player.centre_camera(self.player.playerLocation,self.window,self.rooms[self.activeRoom],True)
-        self.window.update(self.player,self.rooms[self.activeRoom].npcs,paused)
+        self.window.update(self.player,self.rooms[self.activeRoom].npcs,event.event_object)
 
-class room():
+    def on_close(self, event):
+        self.window.on_close(event)
+
+class Room(EventObject):
+    event_system = Controller.event_system
     def __init__(self, name, background=pygame.image.load('villageMap.bmp'), collision=pygame.image.load('testCollision.bmp')):
+        EventObject.__init__(self)
         self.background = pygame.transform.scale(background,(12000,12000))
         collision = pygame.transform.scale(collision,(12000,12000))
         self.size = self.background.get_rect().size
@@ -56,14 +68,50 @@ class room():
         ###This function will be used to save the room state when the player exits the room
 
 
-class player():
+class Player(EventObject):
+    event_system = Controller.event_system
     def __init__(self, location,windowWidth,windowHeight):
+        EventObject.__init__(self)
         ###do player stuff here
         self.playerLocation = location
         self.screenLocation = [windowWidth/2,windowHeight/2]
         self.cameraLocation = [location[0]-windowWidth/2,location[1]-windowHeight/2]
         self.velocity = [0.00,0.00]
         self.maxSpeed=10
+        self.movement_modifier = 1.0
+        self.move_down = 0.0
+        self.move_right = 0.0
+        self.event_system.add_event_handler(KEYDOWN_EVENT, 1, self.keydown_move_down)
+        self.event_system.add_event_handler(KEYDOWN_EVENT, 2, self.keydown_move_right)
+        self.event_system.add_event_handler(KEYUP_EVENT, 1, self.keyup_move_down)
+        self.event_system.add_event_handler(KEYUP_EVENT, 2, self.keyup_move_right)
+
+    def keydown_move_down(self, event):
+        if event.event_object == pygame.K_s:
+            self.move_down += self.movement_modifier
+        else:
+            self.move_down -= self.movement_modifier
+
+    def keydown_move_right(self, event):
+        if event.event_object == pygame.K_d:
+            self.move_right += self.movement_modifier
+        else:
+            self.move_right -= self.movement_modifier
+
+    def keyup_move_down(self, event):
+        if event.event_object == pygame.K_s:
+            self.move_down -= self.movement_modifier
+        else:
+            self.move_down += self.movement_modifier
+
+    def keyup_move_right(self, event):
+        if event.event_object == pygame.K_d:
+            self.move_right -= self.movement_modifier
+        else:
+            self.move_right += self.movement_modifier
+
+    def update_speed(self):
+        self.add_speed([self.move_right,self.move_down])
 
     def add_speed(self,dd_vector):
         self.velocity = [self.velocity[0] + dd_vector[0],self.velocity[1] + dd_vector[1]]
@@ -111,8 +159,10 @@ class player():
 
 
 
-class npc():
+class Npc(EventObject):
+    event_system = Controller.event_system
     def __init__(self, location,level):
+        EventObject.__init__(self)
         ###do entity init stuff here
         self.roomLocation = location
         ###type will hold a numerical value that indicates the type of npc (0=villager,1=monster tier 1,2=monster tier 2,3=monster tier 3,4=monster tier 4,5=monster tier 5,6=monster tier 6,7=world boss)
@@ -159,8 +209,9 @@ class npc():
 
 
 
-        class ability():
+        class Ability(EventObject):
             def __init__(self,name=None):
+                EventObject.__init__(self)
                 ###ability sub class
                 self.name = name
 

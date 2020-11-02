@@ -1,4 +1,4 @@
-from controller import *
+from App import *
 
 if __name__ == '__main__':
-    c = controller()
+    a = App()
